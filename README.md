@@ -1,14 +1,14 @@
 # RxSocketClient
 
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/codeestX/RxSocketClient/pulls) [![API](https://img.shields.io/badge/API-20%2B-brightgreen.svg)](https://android-arsenal.com/api?level=20) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)[![](https://jitpack.io/v/codeestX/RxSocketClient.svg)](https://jitpack.io/#codeestX/RxSocketClient)
+ [![API](https://img.shields.io/badge/API-20%2B-brightgreen.svg)](https://android-arsenal.com/api?level=20) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![](https://jitpack.io/v/joansanfeliu/RxSocketClient.svg)](https://jitpack.io/#joansanfeliu/RxSocketClient)
 
-RxSocketClient, Reactive Socket APIs for Android, Java and Kotlin, powered by RxJava2  
-RxSocketClient，支持Android，Java和Kotlin的响应式Socket APIs封装，基于RxJava2
 
-RxJava2 Version: 2.1.1
+This project is a fork from [codeestX](https://github.com/codeestX/RxSocketClient/)
 
-# Usage
+# Features Added
+- SSLSocket support (protocol TLS v1.2 *only*)
 
+# Installation
 Step 1. Add the JitPack repository to your build file
 
 	allprojects {
@@ -21,10 +21,10 @@ Step 1. Add the JitPack repository to your build file
 Step 2. Add the dependency
 
 	dependencies {
-	        compile 'com.github.codeestX:RxSocketClient:v1.0.1'
+	        compile 'com.github.joansanfeliu:RxSocketClient:v0.0.1'
 	}
 	
-### init
+## init
 ```java
 SocketClient mClient = RxSocketClient
         .create(new SocketConfig.Builder()
@@ -52,7 +52,7 @@ SocketClient mClient = RxSocketClient
 | Head | Optional | appending bytes at head when sending data, not included heartbeat |
 | Tail | Optional | appending bytes at last when sending data, not included heartbeat |
 
-### connect
+## connect
 ```java
 Disposable ref = mClient.connect()
 	... // anything else what you can do with RxJava
@@ -84,14 +84,14 @@ Disposable ref = mClient.connect()
                 });
 ```
 
-### disconnect
+## disconnect
 ```java
 mClient.disconnect();
 //or
 ref.dispose();
 ```
 
-### sendData
+## sendData
 ```java
 mClient.sendData(bytes);
 //or
@@ -101,6 +101,7 @@ mClient.sendData(string);
 # License
 
       Copyright (c) 2017 codeestX
+      Copyright (c) 2018 joansanfeliu
 
       Licensed under the Apache License, Version 2.0 (the "License");
       you may not use this file except in compliance with the License.
