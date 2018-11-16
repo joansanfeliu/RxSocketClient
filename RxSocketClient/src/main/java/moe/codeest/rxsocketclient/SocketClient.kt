@@ -65,7 +65,7 @@ class SocketClient(val mConfig: SocketConfig) {
             val context: SSLContext = SSLContext.getInstance("TLSv1.2").apply {
                 init(null, trustAllCerts, null)
             }
-            mSSLSocket = context.socketFactory.createSocket(mConfig.mIp, mConfig.mPort ?: 1080) as SSLSocket
+            mSSLSocket = context.socketFactory.createSocket() as SSLSocket
             val protocols = Array<String>(1) {"TLSv1.2"}
             mSSLSocket.apply {
                 enabledProtocols = protocols

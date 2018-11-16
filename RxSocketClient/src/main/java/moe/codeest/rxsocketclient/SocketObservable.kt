@@ -27,7 +27,11 @@ import java.net.Socket
 import moe.codeest.rxsocketclient.meta.SocketState
 import java.io.DataInputStream
 import java.io.IOException
+import java.security.cert.X509Certificate
+import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSocket
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 
 /**
