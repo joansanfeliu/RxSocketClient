@@ -28,6 +28,7 @@ Step 2. Add the dependency
 ```java
 SocketClient mClient = RxSocketClient
         .create(new SocketConfig.Builder()
+		.setSSL(true)
                 .setIp(IP)
                 .setPort(PORT)
                 .setCharset(Charsets.UTF_8)
@@ -43,6 +44,7 @@ SocketClient mClient = RxSocketClient
 ```
 | value | default | description |
 | :--: | :--: | :--: |
+| SSL | false | Use SSL/TLS for the connection |
 | Ip | required | host address |
 | Port | required | port number |
 | Charset | UTF_8 | the charset when encode a String to byte[] |
