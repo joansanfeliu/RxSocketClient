@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2017 codeestX
+ * Copyright (C) 2018 joansanfeliu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +26,7 @@ import java.nio.charset.Charset
  */
 
 class SocketConfig(
+        val mSSL: Boolean,
         val mIp: String?,
         val mPort: Int?,
         val mTimeout: Int?,
@@ -32,10 +34,13 @@ class SocketConfig(
         val mThreadStrategy: Int?
 ) {
 
-    private constructor(builder: Builder) : this(builder.mIp, builder.mPort,
+    private constructor(builder: Builder) : this(builder.mSSL, builder.mIp, builder.mPort,
             builder.mTimeout, builder.mCharset, builder.mThreadStrategy)
 
     class Builder {
+        var mSSL: Boolean = false
+            private set
+
         var mIp: String? = null
             private set
 
@@ -49,6 +54,8 @@ class SocketConfig(
             private set
 
         var mThreadStrategy: Int? = ThreadStrategy.ASYNC
+
+        fun setSSL(ssl: Boolean) = apply { this.mSSL = ssl }
 
         fun setIp(ip: String) = apply { this.mIp = ip }
 

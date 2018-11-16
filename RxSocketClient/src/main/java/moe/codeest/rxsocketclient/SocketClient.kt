@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2017 codeestX
+ * Copyright (C) 2018 joansanfeliu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +26,14 @@ import moe.codeest.rxsocketclient.post.AsyncPoster
 import moe.codeest.rxsocketclient.post.IPoster
 import moe.codeest.rxsocketclient.post.SyncPoster
 import java.net.Socket
+import java.security.cert.X509Certificate
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocket
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 /**
  * @author: Est <codeest.dev@gmail.com>
@@ -38,6 +44,7 @@ import java.util.concurrent.TimeUnit
 class SocketClient(val mConfig: SocketConfig) {
 
     var mSocket: Socket = Socket()
+    lateinit var mSSLSocket: SSLSocket
     var mOption: SocketOption? = null
     lateinit var mObservable: Observable<DataWrapper>
     lateinit var mIPoster: IPoster
@@ -49,7 +56,27 @@ class SocketClient(val mConfig: SocketConfig) {
     }
 
     fun connect(): Observable<DataWrapper> {
-        mObservable = SocketObservable(mConfig, mSocket)
+        if (mConfig.mSSL) {
+            val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
+                override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+                override fun checkClientTrusted(certs: Array<X509Certificate>, authType: String) = Unit
+                override fun checkServerTrusted(certs: Array<X509Certificate>, authType: String) = Unit
+            })
+            val context: SSLContext = SSLContext.getInstance("TLSv1.2").apply {
+                init(null, trustAllCerts, null)
+            }
+            mSSLSocket = context.socketFactory.createSocket(mConfig.mIp, mConfig.mPort ?: 1080) as SSLSocket
+            val protocols = Array<String>(1) {"TLSv1.2"}
+            mSSLSocket.apply {
+                enabledProtocols = protocols
+                soTimeout = 30000
+                useClientMode = true
+            }
+
+            mObservable = SocketObservable(mConfig, null, mSSLSocket)
+        } else {
+            mObservable = SocketObservable(mConfig, mSocket, null)
+        }
         mIPoster = if (mConfig.mThreadStrategy == ThreadStrategy.ASYNC) AsyncPoster(this, mExecutor) else SyncPoster(this, mExecutor)
         initHeartBeat()
         return mObservable
@@ -101,6 +128,10 @@ class SocketClient(val mConfig: SocketConfig) {
     }
 
     fun isConnecting(): Boolean {
-        return mSocket.isConnected
+        if (mConfig.mSSL) {
+            return mSSLSocket.isConnected
+        } else {
+            return mSocket.isConnected
+        }
     }
 }

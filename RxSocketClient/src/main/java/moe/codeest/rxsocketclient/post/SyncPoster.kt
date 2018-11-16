@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2017 codeestX
+ * Copyright (C) 2018 joansanfeliu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,15 +57,29 @@ class SyncPoster(private val mSocketClient: SocketClient, private val mExecutor:
                             }
                         }
                     }
-                    pendingPost?.let {
-                        mSocketClient.mSocket.getOutputStream()?.apply {
-                            try {
-                                write(pendingPost!!.data)
-                                flush()
-                            } catch (e: Exception) {
-                                mSocketClient.disconnect()
+                    if (mSocketClient.mConfig.mSSL) {
+                        pendingPost?.let {
+                            mSocketClient.mSSLSocket.getOutputStream()?.apply {
+                                try {
+                                    write(pendingPost!!.data)
+                                    flush()
+                                } catch (e: Exception) {
+                                    mSocketClient.disconnect()
+                                }
+                                PendingPost.releasePendingPost(pendingPost!!)
                             }
-                            PendingPost.releasePendingPost(pendingPost!!)
+                        }
+                    } else {
+                        pendingPost?.let {
+                            mSocketClient.mSocket.getOutputStream()?.apply {
+                                try {
+                                    write(pendingPost!!.data)
+                                    flush()
+                                } catch (e: Exception) {
+                                    mSocketClient.disconnect()
+                                }
+                                PendingPost.releasePendingPost(pendingPost!!)
+                            }
                         }
                     }
                 }

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2017 codeestX
+ * Copyright (C) 2018 joansanfeliu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +27,7 @@ import java.net.Socket
 import moe.codeest.rxsocketclient.meta.SocketState
 import java.io.DataInputStream
 import java.io.IOException
+import javax.net.ssl.SSLSocket
 
 
 /**
@@ -34,7 +36,7 @@ import java.io.IOException
  * @description:
  */
 
-class SocketObservable(val mConfig: SocketConfig, val mSocket: Socket) : Observable<DataWrapper>() {
+class SocketObservable(val mConfig: SocketConfig, val mSocket: Socket?, val mSSLSocket: SSLSocket?) : Observable<DataWrapper>() {
 
     val mReadThread: ReadThread = ReadThread()
     lateinit var observerWrapper: SocketObserver
@@ -44,16 +46,31 @@ class SocketObservable(val mConfig: SocketConfig, val mSocket: Socket) : Observa
         observerWrapper = SocketObserver(observer)
         observer?.onSubscribe(observerWrapper)
 
-        Thread(Runnable {
-            try {
-                mSocket.connect(InetSocketAddress(mConfig.mIp, mConfig.mPort ?: 1080), mConfig.mTimeout ?: 0)
-                observer?.onNext(DataWrapper(SocketState.OPEN, ByteArray(0)))
-                mReadThread.start()
-            } catch (e: IOException) {
-                println(e.toString())
-                observer?.onNext(DataWrapper(SocketState.CLOSE, ByteArray(0)))
-            }
-        }).start()
+        if (mSocket != null) {
+            Thread(Runnable {
+                try {
+                    mSocket.connect(InetSocketAddress(mConfig.mIp, mConfig.mPort ?: 1080), mConfig.mTimeout ?: 0)
+                    observer?.onNext(DataWrapper(SocketState.OPEN, ByteArray(0)))
+                    mReadThread.start()
+                } catch (e: IOException) {
+                    println(e.toString())
+                    observer?.onNext(DataWrapper(SocketState.CLOSE, ByteArray(0)))
+                }
+            }).start()
+        }
+
+        if (mSSLSocket != null) {
+            Thread(Runnable {
+                try {
+                    mSSLSocket.connect(InetSocketAddress(mConfig.mIp, mConfig.mPort ?: 1080), mConfig.mTimeout ?: 0)
+                    observer?.onNext(DataWrapper(SocketState.OPEN, ByteArray(0)))
+                    mReadThread.start()
+                } catch (e: IOException) {
+                    println(e.toString())
+                    observer?.onNext(DataWrapper(SocketState.CLOSE, ByteArray(0)))
+                }
+            }).start()
+        }
     }
 
     fun setHeartBeatRef(ref: Disposable) {
@@ -67,43 +84,80 @@ class SocketObservable(val mConfig: SocketConfig, val mSocket: Socket) : Observa
     inner class SocketObserver(private val observer: Observer<in DataWrapper>?) : Disposable {
 
         fun onNext(data: ByteArray) {
-            if (mSocket.isConnected) {
-                observer?.onNext(DataWrapper(SocketState.CONNECTING, data))
+            if (mSocket != null) {
+                if (mSocket.isConnected) {
+                    observer?.onNext(DataWrapper(SocketState.CONNECTING, data))
+                }
+            } else {
+                if (mSSLSocket!!.isConnected) {
+                    observer?.onNext(DataWrapper(SocketState.CONNECTING, data))
+                }
             }
         }
 
         fun onNext(dataWrapper: DataWrapper) {
-            if (mSocket.isConnected) {
-                observer?.onNext(dataWrapper)
+            if (mSocket != null) {
+                if (mSocket.isConnected) {
+                    observer?.onNext(dataWrapper)
+                }
+            } else {
+                if (mSSLSocket!!.isConnected) {
+                    observer?.onNext(dataWrapper)
+                }
             }
         }
 
         override fun dispose() {
             mReadThread.interrupt()
             mHeartBeatRef?.dispose()
-            mSocket.close()
+            if (mSocket != null) {
+                mSocket.close()
+            }
+            if (mSSLSocket != null) {
+                mSSLSocket.close()
+            }
             observer?.onNext(DataWrapper(SocketState.CLOSE, ByteArray(0)))
         }
 
         override fun isDisposed(): Boolean {
-            return mSocket.isConnected
+            if (mSocket != null) {
+                return mSocket.isConnected
+            } else {
+                return mSSLSocket!!.isConnected
+            }
         }
     }
 
     inner class ReadThread : Thread() {
         override fun run() {
             super.run()
-            try {
-                while (!mReadThread.isInterrupted && mSocket.isConnected) {
-                    val input = DataInputStream(mSocket.getInputStream())
-                    var buffer: ByteArray = ByteArray(input.available())
-                    if (buffer.isNotEmpty()) {
-                        input.read(buffer)
-                        observerWrapper.onNext(buffer)
+            if (mSocket != null) {
+                try {
+                    while (!mReadThread.isInterrupted && mSocket.isConnected) {
+                        val input = DataInputStream(mSocket.getInputStream())
+                        var buffer: ByteArray = ByteArray(input.available())
+                        if (buffer.isNotEmpty()) {
+                            input.read(buffer)
+                            observerWrapper.onNext(buffer)
+                        }
                     }
-                }
-            } catch (e: Exception) {
+                } catch (e: Exception) {
 
+                }
+            }
+            if (mSSLSocket != null) {
+                try {
+                    while (!mReadThread.isInterrupted && mSSLSocket.isConnected) {
+                        val input = DataInputStream(mSSLSocket.getInputStream())
+                        var buffer: ByteArray = ByteArray(input.available())
+                        if (buffer.isNotEmpty()) {
+                            input.read(buffer)
+                            observerWrapper.onNext(buffer)
+                        }
+                    }
+                } catch (e: Exception) {
+
+                }
             }
         }
     }

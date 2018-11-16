@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2017 codeestX
+ * Copytight (C) 2018 joansanfeliu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,14 +39,26 @@ class AsyncPoster(private val mSocketClient: SocketClient, private val mExecutor
 
     override fun run() {
         val pendingPost = queue.poll() ?: throw IllegalStateException("No pending post available")
-        mSocketClient.mSocket.takeIf { it.isConnected }?.getOutputStream()?.apply {
-            try {
-                write(pendingPost.data)
-                flush()
-            } catch (e: Exception) {
-                mSocketClient.disconnect()
+        if (mSocketClient.mConfig.mSSL) {
+            mSocketClient.mSSLSocket.takeIf { it!!.isConnected }?.getOutputStream()?.apply {
+                try {
+                    write(pendingPost.data)
+                    flush()
+                } catch (e: Exception) {
+                    mSocketClient.disconnect()
+                }
+                PendingPost.releasePendingPost(pendingPost)
             }
-            PendingPost.releasePendingPost(pendingPost)
+        } else {
+            mSocketClient.mSocket.takeIf { it.isConnected }?.getOutputStream()?.apply {
+                try {
+                    write(pendingPost.data)
+                    flush()
+                } catch (e: Exception) {
+                    mSocketClient.disconnect()
+                }
+                PendingPost.releasePendingPost(pendingPost)
+            }
         }
     }
 
