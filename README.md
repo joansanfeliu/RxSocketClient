@@ -24,6 +24,8 @@ Step 2. Add the dependency
 	        compile 'com.github.joansanfeliu:RxSocketClient:v0.0.3'
 	}
 	
+
+# Usage
 ## init
 ```java
 SocketClient mClient = RxSocketClient
