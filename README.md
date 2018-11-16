@@ -28,12 +28,12 @@ Step 2. Add the dependency
 ```java
 SocketClient mClient = RxSocketClient
         .create(new SocketConfig.Builder()
-		.setSSL(true)
                 .setIp(IP)
                 .setPort(PORT)
                 .setCharset(Charsets.UTF_8)
                 .setThreadStrategy(ThreadStrategy.ASYNC)
                 .setTimeout(30 * 1000)
+		.setSSL(true)
                 .build())
         .option(new SocketOption.Builder()
                 .setHeartBeat(HEART_BEAT, 60 * 1000)
@@ -44,12 +44,12 @@ SocketClient mClient = RxSocketClient
 ```
 | value | default | description |
 | :--: | :--: | :--: |
-| SSL | false | Use SSL/TLS for the connection |
 | Ip | required | host address |
 | Port | required | port number |
 | Charset | UTF_8 | the charset when encode a String to byte[] |
 | ThreadStrategy | Async | sending data asynchronously or synchronously|
 | Timeout | 0 | the timeout of a connection, millisecond |
+| SSL | false | Use SSL/TLS for the connection |
 | HeartBeat | Optional | value and interval of heartbeat, millisecond |
 | Head | Optional | appending bytes at head when sending data, not included heartbeat |
 | Tail | Optional | appending bytes at last when sending data, not included heartbeat |
