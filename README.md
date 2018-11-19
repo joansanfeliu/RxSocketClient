@@ -6,7 +6,7 @@
 This project is a fork from [codeestX](https://github.com/codeestX/RxSocketClient/)
 
 # Features Added
-- SSLSocket support (protocol TLS v1.2 *only*)
+- SSLSocket support (protocol TLS v1.2 *only*) for one-way authentication, so the client does not authenticate itself.
 
 # Installation
 Step 1. Add the JitPack repository to your build file
@@ -21,9 +21,11 @@ Step 1. Add the JitPack repository to your build file
 Step 2. Add the dependency
 
 	dependencies {
-	        compile 'com.github.joansanfeliu:RxSocketClient:v0.0.1'
+	        compile 'com.github.joansanfeliu:RxSocketClient:v0.0.3'
 	}
 	
+
+# Usage
 ## init
 ```java
 SocketClient mClient = RxSocketClient
