@@ -152,7 +152,7 @@ class SocketObservable(val mConfig: SocketConfig, val mSocket: Socket?, val mSSL
             if (mSSLSocket != null) {
                 try {
                     while (!mReadThread.isInterrupted && mSSLSocket.isConnected) {
-                        val input = DataInputStream(mSSLSocket.getInputStream())
+                        val input = DataInputStream(mSSLSocket.inputStream)
                         var buffer: ByteArray = ByteArray(input.available())
                         if (buffer.isNotEmpty()) {
                             input.read(buffer)

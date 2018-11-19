@@ -40,7 +40,7 @@ class AsyncPoster(private val mSocketClient: SocketClient, private val mExecutor
     override fun run() {
         val pendingPost = queue.poll() ?: throw IllegalStateException("No pending post available")
         if (mSocketClient.mConfig.mSSL) {
-            mSocketClient.mSSLSocket.takeIf { it!!.isConnected }?.getOutputStream()?.apply {
+            mSocketClient.mSSLSocket.takeIf { it.isConnected }?.outputStream?.apply {
                 try {
                     write(pendingPost.data)
                     flush()
