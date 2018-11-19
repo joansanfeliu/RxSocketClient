@@ -26,6 +26,7 @@ import moe.codeest.rxsocketclient.post.AsyncPoster
 import moe.codeest.rxsocketclient.post.IPoster
 import moe.codeest.rxsocketclient.post.SyncPoster
 import java.net.Socket
+import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
@@ -57,13 +58,13 @@ class SocketClient(val mConfig: SocketConfig) {
 
     fun connect(): Observable<DataWrapper> {
         if (mConfig.mSSL) {
-            val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
-                override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-                override fun checkClientTrusted(certs: Array<X509Certificate>, authType: String) = Unit
-                override fun checkServerTrusted(certs: Array<X509Certificate>, authType: String) = Unit
-            })
             val context: SSLContext = SSLContext.getInstance("TLSv1.2").apply {
-                init(null, trustAllCerts, null)
+                val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
+                    override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+                    override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) = Unit
+                    override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) = Unit
+                })
+                init(null, trustAllCerts, SecureRandom())
             }
             mSSLSocket = context.socketFactory.createSocket() as SSLSocket
             val protocols = Array<String>(1) {"TLSv1.2"}
