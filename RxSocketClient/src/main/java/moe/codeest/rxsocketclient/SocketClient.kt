@@ -67,9 +67,9 @@ class SocketClient(val mConfig: SocketConfig) {
                 init(null, trustAllCerts, SecureRandom())
             }
             mSSLSocket = context.socketFactory.createSocket() as SSLSocket
-            val protocols: List<String> = listOf("TLSv1.2")
+            val protocols: Array<String> = arrayOf("TLSv1.2")
             mSSLSocket.apply {
-                enabledProtocols = protocols as Array<String>
+                enabledProtocols = protocols
                 soTimeout = 30000
                 useClientMode = true
             }
