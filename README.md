@@ -51,7 +51,7 @@ SocketClient mClient = RxSocketClient
 | Charset | UTF_8 | the charset when encode a String to byte[] |
 | ThreadStrategy | Async | sending data asynchronously or synchronously|
 | Timeout | 0 | the timeout of a connection, millisecond |
-| SSL | false | Use SSL/TLS for the connection |
+| SSL | false | Use a SSL/TLS connection |
 | HeartBeat | Optional | value and interval of heartbeat, millisecond |
 | Head | Optional | appending bytes at head when sending data, not included heartbeat |
 | Tail | Optional | appending bytes at last when sending data, not included heartbeat |
