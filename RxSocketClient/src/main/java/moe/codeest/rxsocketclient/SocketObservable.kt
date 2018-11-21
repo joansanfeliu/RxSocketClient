@@ -25,6 +25,7 @@ import moe.codeest.rxsocketclient.meta.SocketConfig
 import java.net.InetSocketAddress
 import java.net.Socket
 import moe.codeest.rxsocketclient.meta.SocketState
+import java.io.BufferedReader
 import java.io.DataInputStream
 import java.io.IOException
 import java.security.cert.X509Certificate
@@ -152,11 +153,10 @@ class SocketObservable(val mConfig: SocketConfig, val mSocket: Socket?, val mSSL
             if (mSSLSocket != null) {
                 try {
                     while (!mReadThread.isInterrupted && mSSLSocket.isConnected) {
-                        val input = DataInputStream(mSSLSocket.inputStream)
-                        var buffer: ByteArray = ByteArray(input.available())
-                        if (buffer.isNotEmpty()) {
-                            input.read(buffer)
-                            observerWrapper.onNext(buffer)
+                        val reader = BufferedReader(mSSLSocket.inputStream.bufferedReader())
+                        var line: String = reader.readLine()
+                        if (line.isNotEmpty()) {
+                            observerWrapper.onNext(line.toByteArray())
                         }
                     }
                 } catch (e: Exception) {
