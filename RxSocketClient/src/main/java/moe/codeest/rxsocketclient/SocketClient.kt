@@ -44,8 +44,16 @@ import javax.net.ssl.X509TrustManager
 
 class SocketClient(val mConfig: SocketConfig) {
 
+    private val context: SSLContext = SSLContext.getInstance("TLSv1.2").apply {
+        val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
+            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+            override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) = Unit
+            override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) = Unit
+        })
+        init(null, trustAllCerts, SecureRandom())
+    }
     var mSocket: Socket = Socket()
-    lateinit var mSSLSocket: SSLSocket
+    var mSSLSocket: SSLSocket = context.socketFactory.createSocket() as SSLSocket
     var mOption: SocketOption? = null
     lateinit var mObservable: Observable<DataWrapper>
     lateinit var mIPoster: IPoster
@@ -58,22 +66,12 @@ class SocketClient(val mConfig: SocketConfig) {
 
     fun connect(): Observable<DataWrapper> {
         if (mConfig.mSSL) {
-            val context: SSLContext = SSLContext.getInstance("TLSv1.2").apply {
-                val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
-                    override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-                    override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) = Unit
-                    override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) = Unit
-                })
-                init(null, trustAllCerts, SecureRandom())
-            }
-            mSSLSocket = context.socketFactory.createSocket() as SSLSocket
             val protocols: Array<String> = arrayOf("TLSv1.2")
             mSSLSocket.apply {
                 enabledProtocols = protocols
                 soTimeout = 30000
                 useClientMode = true
             }
-
             mObservable = SocketObservable(mConfig, null, mSSLSocket)
         } else {
             mObservable = SocketObservable(mConfig, mSocket, null)

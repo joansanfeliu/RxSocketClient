@@ -153,10 +153,10 @@ class SocketObservable(val mConfig: SocketConfig, val mSocket: Socket?, val mSSL
             if (mSSLSocket != null) {
                 try {
                     while (!mReadThread.isInterrupted && mSSLSocket.isConnected) {
-                        val reader = BufferedReader(mSSLSocket.inputStream.bufferedReader())
+                        val reader = BufferedReader(mSSLSocket.inputStream.bufferedReader(charset = mConfig.mCharset))
                         var line: String = reader.readLine()
                         if (line.isNotEmpty()) {
-                            observerWrapper.onNext(line.toByteArray())
+                            observerWrapper.onNext(line.toByteArray(charset = mConfig.mCharset))
                         }
                     }
                 } catch (e: Exception) {
