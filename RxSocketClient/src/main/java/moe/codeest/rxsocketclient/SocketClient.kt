@@ -72,9 +72,9 @@ class SocketClient(val mConfig: SocketConfig) {
                 soTimeout = 30000
                 useClientMode = true
             }
-            mObservable = SocketObservable(mConfig, null, mSSLSocket)
+            mObservable = SSLSocketObservable(mConfig, mSSLSocket)
         } else {
-            mObservable = SocketObservable(mConfig, mSocket, null)
+            mObservable = SocketObservable(mConfig, mSocket)
         }
         mIPoster = if (mConfig.mThreadStrategy == ThreadStrategy.ASYNC) AsyncPoster(this, mExecutor) else SyncPoster(this, mExecutor)
         initHeartBeat()
@@ -84,6 +84,9 @@ class SocketClient(val mConfig: SocketConfig) {
     fun disconnect() {
         if (mObservable is SocketObservable) {
             (mObservable as SocketObservable).close()
+        }
+        if (mObservable is SSLSocketObservable) {
+            (mObservable as SSLSocketObservable).close()
         }
     }
 
@@ -96,6 +99,9 @@ class SocketClient(val mConfig: SocketConfig) {
                         })
                 if (mObservable is SocketObservable) {
                     (mObservable as SocketObservable).setHeartBeatRef(disposable)
+                }
+                if (mObservable is SSLSocketObservable) {
+                    (mObservable as SSLSocketObservable).setHeartBeatRef(disposable)
                 }
             }
         }
